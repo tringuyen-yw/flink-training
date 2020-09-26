@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  How Log4J2 Works: 10 Ways to Get the Most Out Of It: https://stackify.com/log4j2-java/
+  Log4J2 Pattern: https://logging.apache.org/log4j/2.x/manual/layouts.html#PatternLayout
+-->
+<Configuration status="WARN">
+	<Appenders>
+		<Console name="Console" target="SYSTEM_OUT">
+			<PatternLayout pattern="%style{%d{HH:mm:ss.SSS} [%t]}{white} %highlight{%-5level} %style{%logger{2.}}{cyan} - %msg%n"/>
+		</Console>
+	</Appenders>
+	<Loggers>
+		<Root level="INFO">
+			<AppenderRef ref="Console"/>
+		</Root>
+	</Loggers>
+</Configuration>

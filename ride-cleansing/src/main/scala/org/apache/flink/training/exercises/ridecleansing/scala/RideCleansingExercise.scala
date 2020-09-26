@@ -22,6 +22,8 @@ import org.apache.flink.training.exercises.common.sources.TaxiRideGenerator
 import org.apache.flink.training.exercises.common.utils.ExerciseBase._
 import org.apache.flink.training.exercises.common.utils.{ExerciseBase, GeoUtils, MissingSolutionException}
 import org.apache.flink.streaming.api.scala._
+import org.apache.flink.training.exercises.common.datatypes.TaxiRide
+import org.apache.logging.log4j.LogManager
 
 /**
  * The "Ride Cleansing" exercise of the Flink training in the docs.
@@ -35,22 +37,43 @@ object RideCleansingExercise extends ExerciseBase {
 
   def main(args: Array[String]) {
 
+    val logger = LogManager.getLogger(this.getClass)
+    logger.info("~~~~~ STARTING {} ~~~~~", this.getClass.getCanonicalName)
+
     // set up the execution environment
     val env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setParallelism(parallelism)
 
     // get the taxi ride data stream
-    val rides = env.addSource(rideSourceOrTest(new TaxiRideGenerator()))
+    val dataGenerator = new TaxiRideGenerator()
+    val rides: DataStream[TaxiRide] = env.addSource(rideSourceOrTest(dataGenerator))
 
+    // filter out rides that do not start and end in NYC
     val filteredRides = rides
-      // filter out rides that do not start and end in NYC
-      .filter(ride => throw new MissingSolutionException)
+      //.filter(ride => throw new MissingSolutionException)
+      .filter(ride =>
+        GeoUtils.isInNYC(ride.startLon, ride.startLat) &&
+        GeoUtils.isInNYC(ride.endLon, ride.endLat)
+      )
 
     // print the filtered stream
     printOrTest(filteredRides)
 
-    // run the cleansing pipeline
-    env.execute("Taxi Ride Cleansing")
-  }
+    val jobName = "Taxi Ride Cleansing"
 
+    // run the cleansing pipeline (run indefinitely)
+    //env.execute(jobName)
+
+    // run pipeline (for about 5s and force Job shutdown by stopping the source)
+    logger.info("~~~~~ EXECUTE ASYNC \"{}\" ~~~~~", jobName)
+    env.executeAsync(jobName)
+    Thread.sleep(5000L)
+
+    //logger.info("~~~~~ CANCEL DATA-GENERATOR ~~~~~")
+    //dataGenerator.cancel()
+
+    // seems like there is no simple way to abort a Flink job gracefully
+    logger.info("~~~~~ TERMINATE JOB (the brutal way) ~~~~~")
+    System.exit(999)
+  }
 }

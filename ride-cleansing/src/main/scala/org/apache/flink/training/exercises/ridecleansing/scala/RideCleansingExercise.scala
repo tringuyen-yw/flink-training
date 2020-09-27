@@ -18,6 +18,7 @@
 
 package org.apache.flink.training.exercises.ridecleansing.scala
 
+import org.apache.flink.core.execution.JobClient
 import org.apache.flink.training.exercises.common.sources.TaxiRideGenerator
 import org.apache.flink.training.exercises.common.utils.ExerciseBase._
 import org.apache.flink.training.exercises.common.utils.{ExerciseBase, GeoUtils, MissingSolutionException}
@@ -64,16 +65,12 @@ object RideCleansingExercise extends ExerciseBase {
     // run the cleansing pipeline (run indefinitely)
     //env.execute(jobName)
 
-    // run pipeline (for about 5s and force Job shutdown by stopping the source)
+    // run pipeline (for about 5s and cancel Job, exit gracefully)
     logger.info("~~~~~ EXECUTE ASYNC \"{}\" ~~~~~", jobName)
-    env.executeAsync(jobName)
+    val jobClient: JobClient = env.executeAsync(jobName)
+
     Thread.sleep(5000L)
-
-    //logger.info("~~~~~ CANCEL DATA-GENERATOR ~~~~~")
-    //dataGenerator.cancel()
-
-    // seems like there is no simple way to abort a Flink job gracefully
-    logger.info("~~~~~ TERMINATE JOB (the brutal way) ~~~~~")
-    System.exit(999)
+    logger.info("~~~~~ CANCELLING JOB {}~~~~~", jobClient.getJobID.toString)
+    jobClient.cancel()
   }
 }

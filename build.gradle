@@ -38,7 +38,7 @@ subprojects {
         javaVersion = '1.8'
         flinkVersion = '1.11.0'
         scalaBinaryVersion = '2.12'
-        slf4jVersion = '2.13.3'
+        //slf4jVersion = '2.13.3'
         log4jVersion = '2.13.3'
         junitVersion = '4.12'
     }
@@ -85,7 +85,7 @@ subprojects {
     dependencies {
         //implementation "log4j:log4j:${log4jVersion}"
         //implementation "org.slf4j:slf4j-log4j12:${slf4jVersion}"
-         implementation "org.apache.logging.log4j:log4j-core:${log4jVersion}"
+        implementation "org.apache.logging.log4j:log4j-core:${log4jVersion}"
         implementation "org.apache.logging.log4j:log4j-slf4j-impl:${log4jVersion}"
 
         if (project != project(":common")) {
